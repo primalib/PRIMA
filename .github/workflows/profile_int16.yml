@@ -122,7 +122,7 @@ jobs:
             options.compiler_options = '${{ matrix.compiler_options }}';
             options.debug = ~contains('${{ matrix.compiler_options }}', 'fast')
             options.nr = 1;  % 1 random runs for each problem
-            options.list={'CHEBYQAD'};
+            %options.list={'CHEBYQAD'};
 
             if strcmp('${{ matrix.solver }}', 'cobylal')
                 prof('cobyla', '${{ matrix.dim }}', 'l', '${{ matrix.competitor }}', options);
