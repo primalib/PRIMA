@@ -32,7 +32,7 @@ module bobyqb_mod
 !
 ! Started: February 2022
 !
-! Last Modified: Sunday, February 25, 2024 PM01:45:24
+! Last Modified: Sunday, February 25, 2024 PM03:08:18
 !--------------------------------------------------------------------------------------------------!
 
 implicit none
@@ -217,8 +217,10 @@ end if
 !====================!
 
 ! Initialize XBASE, XPT, SL, SU, FVAL, and KOPT, together with the history, NF, and IJ.
+write (*, *) '=========== In BOBYQB, before INITXF ==========='
 call initxf(calfun, iprint, maxfun, ftarget, rhobeg, xl, xu, x, ij, kopt, nf, fhist, fval, &
     & sl, su, xbase, xhist, xpt, subinfo)
+write (*, *) '=========== In BOBYQB, after INITXF ==========='
 
 ! Report the current best value, and check if user asks for early termination.
 terminate = .false.
@@ -244,11 +246,15 @@ if (subinfo /= INFO_DFT) then
 end if
 
 ! Initialize [BMAT, ZMAT], representing the inverse of the KKT matrix of the interpolation system.
+write (*, *) '=========== In BOBYQB, before INITH ==========='
 call inith(ij, xpt, bmat, zmat)
+write (*, *) '=========== In BOBYQB, after INITH ==========='
 
 ! Initialize the quadratic represented by [GOPT, HQ, PQ], so that its gradient at XBASE+XOPT is
 ! GOPT; its Hessian is HQ + sum_{K=1}^NPT PQ(K)*XPT(:, K)*XPT(:, K)'.
+write (*, *) '=========== In BOBYQB, before INITQ ==========='
 call initq(ij, fval, xpt, gopt, hq, pq)
+write (*, *) '=========== In BOBYQB, after INITQ ==========='
 
 ! After initializing GOPT, HQ, PQ, BMAT, ZMAT, one can also choose to return if these arrays contain
 ! NaN. We do not do it here. The code will continue to run and possibly recovers by geometry steps.
@@ -296,7 +302,9 @@ info = MAXTR_REACHED
 ! BOBYQA never sets IMPROVE_GEO and REDUCE_RHO to TRUE simultaneously.
 do tr = 1, maxtr
     ! Generate the next trust region step D.
+    write (*, *) '=========== In BOBYQB, before TRSBOX ==========='
     call trsbox(delta, gopt, hq, pq, sl, su, trtol, xpt(:, kopt), xpt, crvmin, d)
+    write (*, *) '=========== In BOBYQB, after TRSBOX ==========='
     dnorm = min(delta, norm(d))
     shortd = (dnorm < HALF * rho)
 
@@ -326,7 +334,9 @@ do tr = 1, maxtr
     else
         ! Calculate the next value of the objective function.
         x = xinbd(xbase, xpt(:, kopt) + d, xl, xu, sl, su)  ! X = XBASE + XOPT + D without rounding.
+        write (*, *) '=================== In BOBYQB, before EVALUATE, TR ========================'
         call evaluate(calfun, x, f)
+        write (*, *) '=================== In BOBYQB, after EVALUATE, TR ========================='
         nf = nf + 1_IK
 
         ! Print a message about the function evaluation according to IPRINT.
@@ -373,8 +383,10 @@ do tr = 1, maxtr
             ! !if (ximproved .and. .not. any(den > HALF * maxval(vlag(1:npt)**2))) then
             ! !if (.not. any(den > HALF * maxval(vlag(1:npt)**2))) then  ! Powell's code.
             ! !if (.not. any(den > maxval(vlag(1:npt)**2))) then
+            write (*, *) '=========== In BOBYQB, before RESCUE ==========='
             call rescue(calfun, solver, iprint, maxfun, delta, ftarget, xl, xu, kopt, nf, fhist, &
                 & fval, gopt, hq, pq, sl, su, xbase, xhist, xpt, bmat, zmat, subinfo)
+            write (*, *) '=========== In BOBYQB, after RESCUE ==========='
             if (subinfo /= INFO_DFT) then
                 info = subinfo
                 exit
@@ -401,12 +413,14 @@ do tr = 1, maxtr
         if (knew_tr > 0) then
             xdrop = xpt(:, knew_tr)
             xosav = xpt(:, kopt)
+            write (*, *) '================== In BOBYQB, before UPDATE, TR ===================='
             call updateh(knew_tr, kopt, d, xpt, bmat, zmat)
             call updatexf(knew_tr, ximproved, f, max(sl, min(su, xosav + d)), kopt, fval, xpt)
             call updateq(knew_tr, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq)
             ! Try whether to replace the new quadratic model with the alternative model, namely the
             ! least Frobenius norm interpolant.
             call tryqalt(bmat, fval - fval(kopt), ratio, sl, su, xpt(:, kopt), xpt, zmat, itest, gopt, hq, pq)
+            write (*, *) '============ In BOBYQB, after UPDATE, TR =================='
         end if
     end if  ! End of IF (SHORTD .OR. TRFAIL). The normal trust-region calculation ends.
 
@@ -506,8 +520,10 @@ do tr = 1, maxtr
         vlag = calvlag(kopt, bmat, d, xpt, zmat)
         den = calden(kopt, bmat, d, xpt, zmat)
         if (.not. (is_finite(sum(abs(vlag))) .and. den(knew_geo) > HALF * vlag(knew_geo)**2)) then
+            write (*, *) '=========== In BOBYQB, before RESCUE ==========='
             call rescue(calfun, solver, iprint, maxfun, delta, ftarget, xl, xu, kopt, nf, fhist, &
                 & fval, gopt, hq, pq, sl, su, xbase, xhist, xpt, bmat, zmat, subinfo)
+            write (*, *) '=========== In BOBYQB, after RESCUE ==========='
             if (subinfo /= INFO_DFT) then
                 info = subinfo
                 exit
@@ -518,7 +534,9 @@ do tr = 1, maxtr
         else
             ! Calculate the next value of the objective function.
             x = xinbd(xbase, xpt(:, kopt) + d, xl, xu, sl, su)  ! X = XBASE + XOPT + D without rounding.
+            write (*, *) '============== In BOBYQB, before EVALUATE, GEO =============='
             call evaluate(calfun, x, f)
+            write (*, *) '============== In BOBYQB, after EVALUATE, GEO =============='
             nf = nf + 1_IK
 
             ! Print a message about the function evaluation according to IPRINT.
@@ -551,9 +569,11 @@ do tr = 1, maxtr
             ! and [GQ, HQ, PQ] (the quadratic model), so that XPT(:, KNEW_GEO) becomes XOPT + D.
             xdrop = xpt(:, knew_geo)
             xosav = xpt(:, kopt)
+            write (*, *) '=========== In BOBYQB, before UPDATE, GEO ==========='
             call updateh(knew_geo, kopt, d, xpt, bmat, zmat)
             call updatexf(knew_geo, ximproved, f, max(sl, min(su, xosav + d)), kopt, fval, xpt)
             call updateq(knew_geo, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq)
+            write (*, *) '=========== In BOBYQB, after UPDATE, GEO ==========='
         end if
     end if  ! End of IF (IMPROVE_GEO). The procedure of improving geometry ends.
 
@@ -583,7 +603,9 @@ do tr = 1, maxtr
         ! Other possible criteria: SUM(XOPT**2) >= 1.0E4*DELTA**2, SUM(XOPT**2) >= 1.0E4*RHO**2.
         sl = min(sl - xpt(:, kopt), ZERO)
         su = max(su - xpt(:, kopt), ZERO)
+        write (*, *) '============ In BOBYQB, before SHIFTBASE ==========='
         call shiftbase(kopt, xbase, xpt, zmat, bmat, pq, hq)
+        write (*, *) '============ In BOBYQB, after SHIFTBASE ==========='
         xbase = max(xl, min(xu, xbase))
     end if
 
@@ -601,7 +623,9 @@ end do  ! End of DO TR = 1, MAXTR. The iterative procedure ends.
 ! Return from the calculation, after trying the Newton-Raphson step if it has not been tried yet.
 if (info == SMALL_TR_RADIUS .and. shortd .and. nf < maxfun) then
     x = xinbd(xbase, xpt(:, kopt) + d, xl, xu, sl, su)  ! In precise arithmetic, X = XBASE + XOPT + D.
+    write (*, *) '=========== In BOBYQB, before EVALUATE, TRYNEWTON ==========='
     call evaluate(calfun, x, f)
+    write (*, *) '=========== In BOBYQB, after EVALUATE, TRYNEWTON ==========='
     nf = nf + 1_IK
     ! Print a message about the function evaluation according to IPRINT.
     ! Zaikun 20230512: DELTA has been updated. RHO is only indicative here. TO BE IMPROVED.
@@ -617,7 +641,9 @@ if (fval(kopt) < f .or. is_nan(f)) then
 end if
 
 ! Arrange FHIST and XHIST so that they are in the chronological order.
+write (*, *) '=========== In BOBYQB, before ARRANGEHIST ==========='
 call rangehist(nf, xhist, fhist)
+write (*, *) '=========== In BOBYQB, after ARRANGEHIST ==========='
 
 ! Print a return message according to IPRINT.
 call retmsg(solver, info, iprint, nf, f, x)
@@ -627,6 +653,7 @@ call retmsg(solver, info, iprint, nf, f, x)
 !====================!
 
 ! Postconditions
+write (*, *) '=========== In BOBYQB, before postconditions ==========='
 if (DEBUGGING) then
     call assert(nf <= maxfun, 'NF <= MAXFUN', srname)
     call assert(size(x) == n .and. .not. any(is_nan(x)), 'SIZE(X) == N, X does not contain NaN', srname)
@@ -650,6 +677,8 @@ if (DEBUGGING) then
         & 'FHIST does not contain NaN/+Inf', srname)
     call assert(.not. any(fhist(1:min(nf, maxfhist)) < f), 'F is the smallest in FHIST', srname)
 end if
+write (*, *) '=========== In BOBYQB, after postconditions ==========='
+
 
 write (*, *) '=========== In BOBYQB, END BOBYQB ==========='
 
