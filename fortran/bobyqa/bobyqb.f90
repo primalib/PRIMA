@@ -32,7 +32,7 @@ module bobyqb_mod
 !
 ! Started: February 2022
 !
-! Last Modified: Sunday, February 25, 2024 PM03:08:18
+! Last Modified: Sunday, February 25, 2024 PM03:57:57
 !--------------------------------------------------------------------------------------------------!
 
 implicit none
@@ -655,23 +655,32 @@ call retmsg(solver, info, iprint, nf, f, x)
 ! Postconditions
 write (*, *) '=========== In BOBYQB, before postconditions ==========='
 if (DEBUGGING) then
+    write (*, *) 'nf = ', nf
     call assert(nf <= maxfun, 'NF <= MAXFUN', srname)
+    write (*, *) 'x = ', size(x), x
     call assert(size(x) == n .and. .not. any(is_nan(x)), 'SIZE(X) == N, X does not contain NaN', srname)
+    write (*, *) 'xl = ', size(xl), xl
+    write (*, *) 'xu = ', size(xu), xl
     call assert(all(x >= xl) .and. all(x <= xu), 'XL <= X <= XU', srname)
+    write (*, *) 'f = ', f
     call assert(.not. (is_nan(f) .or. is_posinf(f)), 'F is not NaN/+Inf', srname)
+    write (*, *) 'xhist = ', size(xhist, 1), size(xhist, 2), maxxhist, xhist
     call assert(size(xhist, 1) == n .and. size(xhist, 2) == maxxhist, 'SIZE(XHIST) == [N, MAXXHIST]', srname)
     call assert(.not. any(is_nan(xhist(:, 1:min(nf, maxxhist)))), 'XHIST does not contain NaN', srname)
     ! The last calculated X can be Inf (finite + finite can be Inf numerically).
-!write (16, *) nf, maxxhist
+    write (*, *) 'nf, maxxhist = ', nf, maxxhist
+    !write (16, *) nf, maxxhist
     !do k = 1, min(huge(nf) - 10000_IK, min(nf, maxxhist))
     !do k = 1, min(huge(nf)-1_IK, min(nf, maxxhist))
     do k = 1, min(nf, maxxhist)
+        write (*, *) 'k=', k, xhist(:, k)
 !write (16, *) k, xhist(:, k)
 !write (16, *) xl
 !write (16, *) xu
 !write (16, *) xhist(:, k) >= xl .and. xhist(:, k) <= xu
         call wassert(all(xhist(:, k) >= xl) .and. all(xhist(:, k) <= xu), 'XL <= XHIST <= XU', srname)
     end do
+    write (*, *) 'fhist = ', size(fhist), maxfhist, fhist
     call assert(size(fhist) == maxfhist, 'SIZE(FHIST) == MAXFHIST', srname)
     call assert(.not. any(is_nan(fhist(1:min(nf, maxfhist))) .or. is_posinf(fhist(1:min(nf, maxfhist)))), &
         & 'FHIST does not contain NaN/+Inf', srname)
