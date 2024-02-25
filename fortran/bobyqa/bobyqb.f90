@@ -32,7 +32,7 @@ module bobyqb_mod
 !
 ! Started: February 2022
 !
-! Last Modified: Sunday, February 25, 2024 AM10:26:03
+! Last Modified: Sunday, February 25, 2024 AM10:29:01
 !--------------------------------------------------------------------------------------------------!
 
 implicit none
@@ -635,8 +635,8 @@ if (DEBUGGING) then
     ! The last calculated X can be Inf (finite + finite can be Inf numerically).
     write (16, *) nf, maxxhist
     !do k = 1, min(huge(nf)-10000_IK, min(nf, maxxhist))
-    !do k = 1, min(huge(nf)-1_IK, min(nf, maxxhist))
-    do k = 1, min(nf, maxxhist)
+    do k = 1, min(huge(nf)-1_IK, min(nf, maxxhist))
+    !do k = 1, min(nf, maxxhist)
         write (16, *) k, xhist(:, k)
         write (16, *) xl
         write (16, *) xu

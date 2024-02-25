@@ -25,7 +25,7 @@ module bobyqa_mod
 !
 ! Started: February 2022
 !
-! Last Modified: Sunday, February 25, 2024 AM10:25:19
+! Last Modified: Sunday, February 25, 2024 AM10:29:44
 !--------------------------------------------------------------------------------------------------!
 
 implicit none
@@ -419,7 +419,7 @@ call preproc(solver, n, iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, rhobeg
     & npt=npt_loc, eta1=eta1_loc, eta2=eta2_loc, gamma1=gamma1_loc, gamma2=gamma2_loc, &
     & has_rhobeg=has_rhobeg, honour_x0=honour_x0_loc, xl=xl_loc, xu=xu_loc, x0=x)
 
-maxfun_loc = min(maxfun_loc, huge(maxfun_loc) - 1_IK)
+!maxfun_loc = min(maxfun_loc, huge(maxfun_loc) - 1_IK)
 
 ! Further revise MAXHIST_LOC according to MAXHISTMEM, and allocate memory for the history.
 ! In MATLAB/Python/Julia/R implementation, we should simply set MAXHIST = MAXFUN and initialize
