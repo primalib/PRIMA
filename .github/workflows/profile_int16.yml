@@ -2,7 +2,7 @@ name: Plot performance profiles, int16
 
 on:
   # Trigger the workflow on push or pull request
-  #push:
+  push:
   #pull_request:  # DANGEROUS! MUST be disabled for self-hosted runners!
   # Trigger the workflow by cron. The default time zone of GitHub Actions is UTC.
   schedule:
@@ -29,7 +29,7 @@ jobs:
         os: [ubuntu-latest]
         matlab: [latest]
         dim: [all]
-        solver: [bobyqa] 
+        solver: [bobyqa]
         compiler_options: [-O0, -O1, -O2, -O3]
         #solver: [cobylal, cobylan, uobyqa, newuoa, bobyqa, lincoa]  # prima is too expensive
         #compiler_options: [-O0, -O1, -O2, -O3, -Ofast -fno-stack-arrays, -ffast-math]
