@@ -463,7 +463,7 @@ cv_history = NaN(1, maxfun + 1);
 %have_eval_options = isfield(options, 'eval_options') && isstruct(options.eval_options) && ~isempty(fieldnames(options.eval_options));
 prob.options.output_xhist = true;  % We always need xhist to recover the history of the computation.
 
-prob.options.iprint = 3;
+prob.options.iprint = 2;
 
 exception = [];
 try

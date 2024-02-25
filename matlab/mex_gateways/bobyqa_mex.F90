@@ -11,7 +11,7 @@
 !
 ! Started in July 2020
 !
-! Last Modified: Saturday, January 28, 2023 PM11:55:58
+! Last Modified: Sunday, February 25, 2024 PM01:44:35
 !--------------------------------------------------------------------------------------------------!
 
 #include "fintrf.h"
@@ -94,6 +94,7 @@ call fmxReadMPtr(pinput(16), output_xhist)
 
 ! Call the Fortran code
 ! There are different cases because XHIST may or may not be passed to the Fortran code.
+write (*, *) '================= IN BOBYQA_MEX, CALLING BOBYQA ================='
 if (output_xhist) then
     call bobyqa(calfun, x, f, lb, ub, nf, rhobeg, rhoend, ftarget, maxfun, npt, iprint, eta1, eta2, &
         & gamma1, gamma2, xhist=xhist, fhist=fhist, maxhist=maxhist, info=info)
@@ -101,6 +102,8 @@ else
     call bobyqa(calfun, x, f, lb, ub, nf, rhobeg, rhoend, ftarget, maxfun, npt, iprint, eta1, eta2, &
         & gamma1, gamma2, fhist=fhist, maxhist=maxhist, info=info)
 end if
+
+write (*, *) '================= IN BOBYQA_MEX, END CALLING BOBYQA ================='
 
 ! After the Fortran code, XHIST may not be allocated, because it may not have been passed to the
 ! Fortran code. We allocate it here. Otherwise, fmxWriteMPtr will fail.
@@ -126,6 +129,10 @@ deallocate (lb) ! Allocated by fmxReadMPtr.
 deallocate (ub) ! Allocated by fmxReadMPtr.
 deallocate (xhist)  ! Allocated by the solver
 deallocate (fhist)  ! Allocated by the solver
+
+write (*, *) '================= IN BOBYQA_MEX, THE END ================='
+
+!close (16)
 
 !--------------------------------------------------------------------!
 contains

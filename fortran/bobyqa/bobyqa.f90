@@ -25,7 +25,7 @@ module bobyqa_mod
 !
 ! Started: February 2022
 !
-! Last Modified: Sunday, February 25, 2024 AM10:29:44
+! Last Modified: Sunday, February 25, 2024 PM01:45:43
 !--------------------------------------------------------------------------------------------------!
 
 implicit none
@@ -271,6 +271,7 @@ real(RP), allocatable :: xhist_loc(:, :)  ! XHIST_LOC(N, MAXXHIST)
 ! Sizes
 n = int(size(x), kind(n))
 
+write (*, *) '=========== In BOBYQA, START BOBYQA ==========='
 ! Preconditions
 if (DEBUGGING) then
     call assert(n >= 1, 'N >= 1', srname)
@@ -429,6 +430,7 @@ call prehist(maxhist_loc, n, present(xhist), xhist_loc, present(fhist), fhist_lo
 
 
 !-------------------- Call BOBYQB, which performs the real calculations. --------------------------!
+write (*, *) '=========== In BOBYQA, CALLING BOBYQB ==========='
 if (present(callback_fcn)) then
     call bobyqb(calfun, iprint_loc, maxfun_loc, npt_loc, eta1_loc, eta2_loc, ftarget_loc, &
         & gamma1_loc, gamma2_loc, rhobeg_loc, rhoend_loc, xl_loc, xu_loc, x, nf_loc, f_loc, &
@@ -438,6 +440,7 @@ else
         & gamma1_loc, gamma2_loc, rhobeg_loc, rhoend_loc, xl_loc, xu_loc, x, nf_loc, f_loc, &
         & fhist_loc, xhist_loc, info_loc)
 end if
+write (*, *) '=========== In BOBYQA, END CALLING BOBYQB ==========='
 !--------------------------------------------------------------------------------------------------!
 
 ! Write the outputs.
@@ -530,6 +533,8 @@ if (DEBUGGING) then
         call assert(.not. any(fhist < f_loc), 'F is the smallest in FHIST', srname)
     end if
 end if
+
+write (*, *) '=========== In BOBYQA, END BOBYQA ==========='
 
 end subroutine bobyqa
 
