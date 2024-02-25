@@ -634,7 +634,7 @@ if (DEBUGGING) then
     call assert(.not. any(is_nan(xhist(:, 1:min(nf, maxxhist)))), 'XHIST does not contain NaN', srname)
     ! The last calculated X can be Inf (finite + finite can be Inf numerically).
     write(16,*) nf, maxxhist
-    do k = 1, min(nf, maxxhist)
+    do k = 1, min(huge(nf)-1_IK, min(nf, maxxhist))
         write(16,*) k, xhist(:, k)
         write(16,*) xl
         write(16,*) xu
